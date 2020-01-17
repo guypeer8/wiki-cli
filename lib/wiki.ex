@@ -50,8 +50,8 @@ defmodule Wiki do
   end
 
   defp clean_search_result(search_result) do
-    ~r/<span\s+class="searchmatch">(.*)<\/span>/
-      |> Regex.replace(search_result, "\\1")
+    [~r/<span\s+class="searchmatch">/, ~r/(.*)<\/span>/] 
+      |> Enum.reduce(search_result, &(Regex.replace(&1, &2, "\\1")))
       |> String.replace("&quot;", "")
   end
 
