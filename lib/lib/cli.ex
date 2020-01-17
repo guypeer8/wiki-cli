@@ -19,7 +19,7 @@ defmodule Wiki.CLI do
   end
 
   defp search_wiki(term, flags, invalid) do
-    search_flags = case tuple_contains?(invalid, "-l") or tuple_contains?(invalid, "--links") do
+    search_flags = case tuple_contains?(invalid, ["-l", "--links"]) do
       true -> Enum.concat(flags, [links: 1])
       _ -> flags
     end
@@ -42,17 +42,17 @@ defmodule Wiki.CLI do
 
   defp args_valid?(names, invalid) do
     cond do
+      length(names) === 0 ->
+        IO.puts("A term must be passed.\n")
+        show_help()
+        false
+        
       length(invalid) === 1 and tuple_contains?(invalid, ["-l", "--links"]) ->
         true
 
       length(invalid) !== 0 ->
         invalid |> Enum.each(&(IO.puts("#{elem(&1, 0)} is an invalid option."))) 
         IO.puts("\n")
-        show_help()
-        false
-
-      length(names) === 0 ->
-        IO.puts("A term must be passed.\n")
         show_help()
         false
 
