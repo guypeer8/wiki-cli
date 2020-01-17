@@ -3,7 +3,7 @@ defmodule Wiki.CLI do
   @aliases [h: :help, b: :briefs, l: :links, w: :write]
   @description %{
     h: "show current help message",
-    b: "show brief description of first matching results",
+    b: "show brief description of first few matching results",
     l: "show [x] wikipedia links matching input term",
     w: "write the term search result to an html file"
   }
@@ -46,7 +46,7 @@ defmodule Wiki.CLI do
         IO.puts("A term must be passed.\n")
         show_help()
         false
-        
+
       length(invalid) === 1 and tuple_contains?(invalid, ["-l", "--links"]) ->
         true
 
