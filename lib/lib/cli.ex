@@ -2,7 +2,7 @@ defmodule Wiki.CLI do
   @strict [help: :boolean, briefs: :boolean, links: :integer, write: :boolean]
   @aliases [h: :help, b: :briefs, l: :links, w: :write]
   @description %{
-    h: "show this help message",
+    h: "show current help message",
     b: "show brief description of first matching results",
     l: "show [x] wikipedia links matching input term",
     w: "write the term search result to an html file"
@@ -13,9 +13,18 @@ defmodule Wiki.CLI do
 
     cond do 
       tuple_contains?(flags, :help) -> show_help()
-      args_valid?(names, invalid) -> Wiki.search(List.first(names), flags)
-      true -> :ok 
+      args_valid?(names, invalid) -> search_wiki(List.first(names), flags, invalid)
+      true -> :ok  
     end  
+  end
+
+  defp search_wiki(term, flags, invalid) do
+    search_flags = case tuple_contains?(invalid, "-l") or tuple_contains?(invalid, "--links") do
+      true -> Enum.concat(flags, [links: 1])
+      _ -> flags
+    end
+
+    Wiki.search(term, search_flags)
   end
 
   defp parse(args) do
@@ -24,7 +33,7 @@ defmodule Wiki.CLI do
 
   defp show_help do
     """
-    usage: wiki [term] [-#{@aliases |> Enum.map(fn {opt, _} -> opt end) |> Enum.join}]
+    usage: wiki [term] [-#{@aliases |> Enum.map(&(elem(&1, 0))) |> Enum.join}]
     aliases:
      #{@aliases |> Enum.map(fn {opt, opt_extended} -> "[ -#{opt}, --#{opt_extended} ], #{Map.get(@description, opt)}\n\s" end)}
     """
@@ -33,8 +42,11 @@ defmodule Wiki.CLI do
 
   defp args_valid?(names, invalid) do
     cond do
+      length(invalid) === 1 and tuple_contains?(invalid, ["-l", "--links"]) ->
+        true
+
       length(invalid) !== 0 ->
-        invalid |> Enum.each(fn {flag, _} -> IO.puts("#{flag} is an invalid option.") end) 
+        invalid |> Enum.each(&(IO.puts("#{elem(&1, 0)} is an invalid option."))) 
         IO.puts("\n")
         show_help()
         false
@@ -53,7 +65,17 @@ defmodule Wiki.CLI do
     end
   end
 
-  defp tuple_contains?(tuple_list, atom) do
-    Enum.member?(Enum.map(tuple_list, fn {key, _} -> key end), atom)
+  defp get_tuple_keys(tuple_list) do
+    Enum.map(tuple_list, fn {key, _} -> key end)
+  end
+
+  defp tuple_contains?(tuple_list, item) do
+    tuple_keys = get_tuple_keys(tuple_list)
+
+    if is_list(item) do
+      item |> Enum.any?(&(Enum.member?(tuple_keys, &1)))
+    else
+      Enum.member?(tuple_keys, item)
+    end
   end
 end
