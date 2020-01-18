@@ -1,11 +1,13 @@
 defmodule Wiki.CLI do
-  @strict [help: :boolean, briefs: :boolean, links: :integer, write: :boolean]
-  @aliases [h: :help, b: :briefs, l: :links, w: :write]
+  @wiki_locale "en"
+  @strict [help: :boolean, briefs: :boolean, links: :integer, write: :boolean, locale: :string]
+  @aliases [h: :help, b: :briefs, l: :links, w: :write, c: :locale]
   @description %{
     h: "show current help message",
     b: "show brief description of first few matching results",
     l: "show [x] wikipedia links matching input term",
-    w: "write the term search result to an html file"
+    w: "write the term search result to an html file",
+    c: "the locale used to fetch the term from wikimedia"
   }
 
   def main(args \\ []) do
@@ -19,12 +21,16 @@ defmodule Wiki.CLI do
   end
 
   defp search_wiki(term, flags, invalid) do
+    locale = flags 
+      |> Enum.find({:locale, @wiki_locale}, fn {key, _} -> key === :locale end) 
+      |> elem(1)
+
     search_flags = case tuple_contains?(invalid, ["-l", "--links"]) do
       true -> Enum.concat(flags, [links: 1])
       _ -> flags
     end
 
-    Wiki.search(term, search_flags)
+    Wiki.search(term, search_flags, locale)
   end
 
   defp parse(args) do
