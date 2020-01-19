@@ -6,6 +6,7 @@ aliases:
  [ -h, --help ], show current help message
  [ -b, --briefs ], show brief description of first few matching results
  [ -l, --links ], show [x] wikipedia links matching input term
+ [ -t, --text ], extract the text explaining the term
  [ -w, --write ], write the term search result to an html file
  [ -c, --locale ], the locale used to fetch the term from wikimedia
 ```
@@ -16,6 +17,7 @@ wiki ww2 # [= wiki ww2 -b] returns short text explaining the term "ww2"
 wiki "pearl jam" -l 3 # returns 3 wikipedia links related to the term "pearl jam"
 wiki cleopatra -w # writes and html file named "cleopatra" inside a folder named "wikidocs" on the current directory
 wiki "donald trump" -c fr -l 2 # returns 2 wikipedia links in french related to "donald trump"
+wiki zeus -t # extracts & logs the text related to the term "zeus"
 ```
  
 ## Installation
