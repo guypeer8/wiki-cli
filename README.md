@@ -1,7 +1,7 @@
 # Wiki
 
 ```text
-usage: wiki [term] [-hblwc]
+usage: wiki [term] [-hbltwc]
 aliases:
  [ -h, --help ], show current help message
  [ -b, --briefs ], show brief description of first few matching results
