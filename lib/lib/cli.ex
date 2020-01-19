@@ -1,11 +1,12 @@
 defmodule Wiki.CLI do
   @wiki_locale "en"
-  @strict [help: :boolean, briefs: :boolean, links: :integer, write: :boolean, locale: :string]
-  @aliases [h: :help, b: :briefs, l: :links, w: :write, c: :locale]
+  @strict [help: :boolean, briefs: :boolean, links: :integer, text: :boolean, write: :boolean, locale: :string]
+  @aliases [h: :help, b: :briefs, l: :links, t: :text, w: :write, c: :locale]
   @description %{
     h: "show current help message",
     b: "show brief description of first few matching results",
     l: "show [x] wikipedia links matching input term",
+    t: "extract the text explaining the term",
     w: "write the term search result to an html file",
     c: "the locale used to fetch the term from wikimedia"
   }

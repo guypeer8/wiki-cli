@@ -2,15 +2,24 @@ defmodule Wiki do
   @wiki_locale "en"
   @wiki_base_api "wikipedia.org/w/api.php?utf8=&format=json"
   @wiki_briefs_api "#{@wiki_base_api}&action=query&list=search&srsearch="
+  @wiki_extracts_api "#{@wiki_base_api}&action=query&prop=extracts&titles="
   @wiki_opensearch_api "#{@wiki_base_api}&action=opensearch&namespace=0&search="
   @wikidocs "wikidocs"
 
   defp get_api(:briefs, term, locale) do
-    "https://#{locale}.#{@wiki_briefs_api}#{URI.encode(term)}"
+    get_api(@wiki_briefs_api, term, locale)
+  end
+
+  defp get_api(:extracts, term, locale) do
+    get_api(@wiki_extracts_api, term, locale)
   end
 
   defp get_api(:opensearch, term, locale) do
-    "https://#{locale}.#{@wiki_opensearch_api}#{URI.encode(term)}"
+    get_api(@wiki_opensearch_api, term, locale)
+  end
+
+  defp get_api(api_url, term, locale) do
+    "https://#{locale}.#{api_url}#{URI.encode(term)}"
   end
 
   defp get_matched_urls(term, locale, show_urls_num \\ 3, log_results \\ false) do
@@ -57,8 +66,19 @@ defmodule Wiki do
 
   defp clean_search_result(search_result) do
     [~r/<span\s+class="searchmatch">/, ~r/<\/span>/] 
-      |> Enum.reduce(search_result, &(Regex.replace(&1, &2, "\\1")))
+      |> Enum.reduce(search_result, &(Regex.replace(&1, &2, "\\1"))) 
       |> String.replace("&quot;", "")
+  end
+
+  defp get_text(term, locale) do
+    data = Wiki.HTTP.get(get_api(:extracts, term, locale))
+    pages = data["query"]["pages"]
+
+    Map.values(pages) 
+    |> List.first 
+    |> Map.get("extract", "No text found.")
+    |> HtmlSanitizeEx.strip_tags
+    |> IO.puts
   end
 
   defp to_html(term, locale) do
@@ -82,10 +102,7 @@ defmodule Wiki do
       _ -> flags
     end
 
-    cli_flags = map_flags 
-    |> Enum.reduce(%{}, fn {key, val}, acc ->
-        Map.put(acc, key, val)
-      end)
+    cli_flags = map_flags |> Enum.into(%{})
     
     if Map.has_key?(cli_flags, :briefs) do
        search_briefs(term, locale)
@@ -93,6 +110,10 @@ defmodule Wiki do
 
     if Map.has_key?(cli_flags, :links) do
        get_matched_urls(term, locale, Map.get(cli_flags, :links, 1), true)
+    end
+
+    if Map.has_key?(cli_flags, :text) do
+      get_text(term, locale)
     end
 
     if Map.has_key?(cli_flags, :write) do
